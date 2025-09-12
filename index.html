@@ -3,691 +3,456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เกมตอบคำถาม</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <title>แบบสอบถามความปลอดภัยในโรงเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* General CSS and layout */
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap');
         body {
             font-family: 'Sarabun', sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-            color: #333;
-            text-align: center;
-            transition: background-color 0.5s ease-in-out;
-            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
-            position: relative;
+            background-image: linear-gradient(to right, #4b6cb7, #182848);
         }
-        
-        /* Styles for splash screen and game screen */
-        #splash-screen, #game-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        .progress-bar-container {
             width: 100%;
-            padding: 2.5rem;
-            box-sizing: border-box;
-        }
-
-        #game-screen {
-            max-width: 90%;
-            width: 500px;
-            background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 10;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .hearts {
-            font-size: 2.5rem;
-            color: #ff4757;
-        }
-
-        .heart {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .heart.lost {
-            color: #ccc;
-            transform: scale(0.8);
-            opacity: 0.5;
-        }
-
-        .timer {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #555;
-            background-color: #e0e0e0;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-        }
-
-        .question-box {
-            background-color: #f7f9fc;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 5;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .question-text {
-            font-size: 1.5rem;
-            line-height: 1.6;
-            font-weight: 700;
-        }
-
-        .answers-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 5;
-        }
-
-        /* Keyframes for gradual blur */
-        @keyframes gradual-blur {
-            from {
-                filter: blur(0px);
-            }
-            to {
-                filter: blur(5px);
-            }
-        }
-
-        /* Add CSS for blurring answers */
-        .answers-grid.blurred-answers {
-            animation: gradual-blur 0.5s ease-in-out forwards;
-        }
-
-        .answer-btn {
-            background-color: #74b9ff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 1rem;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 0 #0984e3;
-            white-space: nowrap;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
             overflow: hidden;
-            text-overflow: ellipsis;
+            height: 8px;
+            margin-top: 1rem;
         }
-        
-        /* Prevents overlapping taps on mobile */
-        .answer-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #0984e3;
-        }
-
-        .answer-btn:hover {
-            background-color: #0984e3;
-        }
-
-        /* Answer states */
-        .answer-btn.correct {
-            background-color: #2ecc71;
-            box-shadow: 0 4px 0 #27ae60;
-        }
-
-        .answer-btn.incorrect {
-            background-color: #e74c3c;
-            box-shadow: 0 4px 0 #c0392b;
-        }
-
-        /* Start and end game screens */
-        .start-screen, .end-screen {
-            /* Full screen overlay */
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .progress-bar {
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-            opacity: 1;
-            visibility: visible;
+            background-color: #2563eb;
+            transition: width 0.3s ease-in-out;
+            border-radius: 9999px;
         }
-
-        .start-screen.hidden, .end-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
         }
-
-        .game-title {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
         }
-
-        .start-btn, .restart-btn {
-            background-color: #ff6b81;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 1.2rem 2.5rem; /* Increase button size */
-            font-size: 1.8rem; /* Increase font size */
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 6px 0 #e65268; /* Increase shadow size */
-            transition: all 0.3s ease;
-            margin-top: 2rem; /* Increase top margin */
-        }
-
-        .start-btn:active, .restart-btn:active {
-            transform: translateY(4px); /* Increase movement */
-            box-shadow: 2px 2px 0 #e65268;
-        }
-
-        .game-over-text {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #e74c3c;
-            margin-bottom: 1rem;
-        }
-        
-        .game-win-text {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #2ecc71;
-            margin-bottom: 1rem;
-        }
-        
-        /* Visual obstruction */
-        .visual-obstruction {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0); /* Start with transparency */
-            backdrop-filter: blur(0px); /* Start with no blur */
-            transition: background-color 0.5s ease, backdrop-filter 0.5s ease;
-            pointer-events: none; /* Allows clicks to pass through */
-        }
-        
-        .visual-obstruction.active {
-            background-color: rgba(0, 0, 0, 0.8); /* Darken */
-            backdrop-filter: blur(10px); /* Add blur */
-        }
-
-        /* Status message box */
-        .status-message {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            border-radius: 15px;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            z-index: 30;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            pointer-events: none;
-            background-color: #2ecc71;
-            min-width: 150px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .status-message.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-20px);
-        }
-
-        .status-message.incorrect {
-            background-color: #e74c3c;
-        }
-        
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            #game-screen {
-                padding: 1.5rem;
-                margin: 1rem;
-            }
-            .game-title {
-                font-size: 2.5rem;
-            }
-            .question-text {
-                font-size: 1.2rem;
-            }
-            .answer-btn {
-                font-size: 1rem;
-                padding: 0.8rem;
-            }
-            .start-btn, .restart-btn {
-                padding: 1rem 1.5rem;
-                font-size: 1.2rem;
-            }
-            .hearts {
-                font-size: 2rem;
-            }
-            .timer {
-                font-size: 1.5rem;
-            }
+        .group:hover .hover-scale-105 {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body>
-    <!-- Splash screen - full-screen overlay -->
-    <div id="splash-screen">
-        <h1 class="game-title">เกมตอบคำถาม</h1>
-        <p>ตอบคำถามให้ถูกต้อง! มีเวลา 3 วินาทีต่อคำถาม และหัวใจ 3 ดวง</p>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-4 sm:p-8 rounded-2xl shadow-2xl w-full max-w-3xl transform transition-transform duration-300 hover:scale-105">
         
-        <div style="margin: 2rem 0;">
-            <h2>ทีมผู้จัดทำ</h2>
-            <p><b>เขียนโปรแกรม:</b> นายธนกานต์ อรรคฮาต เลขที่ 5</p>
-            <p><b>ทำสไลด์:</b> ณรงค์กร รัษาภักดี เลขที่ 4</p>
-            <p><b>นำเสนอ, หาข้อมูล:</b> ขอบคุณ พระกาย เลขที่ 3</p>
-            <p><b>นำเสนอ, หาข้อมูล:</b> สุกฤษฎิ์ เพชชฤา เลขที่ 19(young j)</p>
-        </div>
-        
-        <button class="start-btn">เริ่มเกม</button>
-    </div>
+        <!-- Status Message Box -->
+        <div id="statusMessage" class="hidden text-center p-3 mb-4 rounded-lg text-sm font-semibold transition-all duration-300"></div>
 
-    <!-- Main game screen - hidden at start -->
-    <div id="game-screen" class="hidden">
-        <div class="header">
-            <div class="hearts" id="hearts-display">
-                <span class="heart" data-index="0">❤️</span>
-                <span class="heart" data-index="1">❤️</span>
-                <span class="heart" data-index="2">❤️</span>
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-2 sm:mb-4 text-center tracking-wide">
+            🏫 แบบสอบถามความปลอดภัย<br>โรงเรียนศรีรัตนะวิทยา
+        </h1>
+        <p class="text-sm sm:text-base text-gray-600 text-center mb-4 sm:mb-6">
+            คุณครูอยากฟังความคิดเห็นของท่านเพื่อปรับปรุงโรงเรียนให้ปลอดภัยขึ้น
+        </p>
+
+        <!-- Progress Indicator -->
+        <div class="flex items-center justify-between mb-4 text-sm font-medium text-gray-600">
+            <span id="progressText">ตอบแล้ว 0/7 ข้อ</span>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
             </div>
-            <div class="timer" id="timer-display">3s</div>
-        </div>
-        <div class="question-box">
-            <p id="question-text" class="question-text">Loading...</p>
-        </div>
-        <div class="answers-grid" id="answers-grid">
-            <!-- Answer buttons will be generated by JavaScript -->
         </div>
 
-        <!-- Visual obstruction -->
-        <div id="visual-obstruction" class="visual-obstruction"></div>
-    </div>
-    
-    <!-- Game over screen - moved outside game-screen -->
-    <div class="end-screen hidden">
-        <h2 id="end-message-title" class="game-over-text"></h2>
-        <p>คุณตอบคำถามได้ถูกต้อง <span id="score-display">0</span> ข้อ</p>
-        <button class="restart-btn">เล่นใหม่</button>
-    </div>
+        <form id="surveyForm" novalidate>
+            <!-- Personal Info -->
+            <div class="mb-4 sm:mb-6 bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200 transition-shadow duration-200 hover-scale-105">
+                <p class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">ข้อมูลส่วนตัว</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="name-group">
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ</label>
+                        <input type="text" id="name" name="name" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                    </div>
+                    <div id="grade-group">
+                        <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">ชั้นมัธยมศึกษา</label>
+                        <input type="text" id="grade" name="grade" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                    </div>
+                </div>
+            </div>
 
-    <!-- Status message box -->
-    <div id="status-message" class="status-message"></div>
+            <!-- Question 1 -->
+            <div id="q1-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    1. 🛡️ โดยรวมคุณรู้สึกปลอดภัยในโรงเรียนหรือไม่?
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('โดยรวมคุณรู้สึกปลอดภัยในโรงเรียนหรือไม่?')">
+                        🗣️
+                    </button>
+                </p>
+                <div class="flex flex-col space-y-3 sm:space-y-4" id="q1-group">
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q1" value="5" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">5 ปลอดภัยที่สุด</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q1" value="4" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">4 ปลอดภัย</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q1" value="3" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">3 ปานกลาง</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q1" value="2" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">2 ไม่ค่อยปลอดภัย</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q1" value="1" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">1 ไม่ปลอดภัยเลย</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div id="q2-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    2. 🧹 โรงเรียนมีการดูแลความสะอาดและความเรียบร้อยของอาคารสถานที่
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('โรงเรียนมีการดูแลความสะอาดและความเรียบร้อยของอาคารสถานที่')">
+                        🗣️
+                    </button>
+                </p>
+                <div class="flex flex-col space-y-3 sm:space-y-4" id="q2-group">
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q2" value="5" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">5 ดีที่สุด</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q2" value="4" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">4 ดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q2" value="3" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">3 ปานกลาง</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q2" value="2" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">2 ไม่ค่อยดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q2" value="1" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">1 แย่ที่สุด</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div id="q3-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    3. 🛡️ ทางเดิน บันได และพื้นที่ใช้สอยมีความปลอดภัยจากการหกล้ม
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('ทางเดิน บันได และพื้นที่ใช้สอยมีความปลอดภัยจากการหกล้ม')">
+                        🗣️
+                    </button>
+                </p>
+                <div class="flex flex-col space-y-3 sm:space-y-4" id="q3-group">
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q3" value="5" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">5 ปลอดภัยที่สุด</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q3" value="4" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">4 ปลอดภัย</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q3" value="3" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">3 ปานกลาง</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q3" value="2" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">2 ไม่ค่อยปลอดภัย</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q3" value="1" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">1 ไม่ปลอดภัยเลย</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div id="q4-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    4. นักเรียนได้รับการปฏิบัติอย่างเท่าเทียม ไม่ถูกเลือกปฏิบัติ
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('นักเรียนได้รับการปฏิบัติอย่างเท่าเทียม ไม่ถูกเลือกปฏิบัติ')">
+                        🗣️
+                    </button>
+                </p>
+                <div class="flex flex-col space-y-3 sm:space-y-4" id="q4-group">
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q4" value="5" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">5 ดีที่สุด</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q4" value="4" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">4 ดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q4" value="3" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">3 ปานกลาง</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q4" value="2" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">2 ไม่ค่อยดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q4" value="1" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">1 แย่ที่สุด</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 5 and 6 -->
+            <div id="q5-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    5. 🛡️ มีการป้องกันภัยจากบุคคลภายนอกที่เข้ามาในโรงเรียน
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('มีการป้องกันภัยจากบุคคลภายนอกที่เข้ามาในโรงเรียน')">
+                        🗣️
+                    </button>
+                </p>
+                <div class="flex flex-col space-y-3 sm:space-y-4" id="q5-group">
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q5" value="5" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">5 ดีที่สุด</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q5" value="4" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">4 ดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q5" value="3" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">3 ปานกลาง</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q5" value="2" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">2 ไม่ค่อยดี</span>
+                    </label>
+                    <label class="group inline-flex items-center cursor-pointer text-base sm:text-lg transition-all duration-200">
+                        <input type="radio" name="q5" value="1" class="form-radio h-6 w-6 sm:h-7 sm:w-7 text-indigo-600 border-gray-300 focus:ring-indigo-500 rounded-full transition-all duration-200">
+                        <span class="ml-3 text-gray-700 group-hover:scale-105 transition-transform duration-200">1 แย่ที่สุด</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Question 6 -->
+            <div id="q6-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    6. คุณเคยประสบเหตุการณ์ไม่ปลอดภัยในโรงเรียนหรือไม่?
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('คุณเคยประสบเหตุการณ์ไม่ปลอดภัยในโรงเรียนหรือไม่?')">
+                        🗣️
+                    </button>
+                </p>
+                <textarea id="q6" name="q6" rows="4" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base sm:text-lg"></textarea>
+            </div>
+
+            <!-- Question 7 -->
+            <div id="q7-container" class="mb-4 sm:mb-6 bg-blue-50 p-4 sm:p-6 rounded-xl border border-blue-200 transition-shadow duration-200">
+                <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                    7. อยากให้โรงเรียนปรับปรุงด้านความปลอดภัยในเรื่องใด?
+                    <button type="button" class="ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200" onclick="readText('อยากให้โรงเรียนปรับปรุงด้านความปลอดภัยในเรื่องใด?')">
+                        🗣️
+                    </button>
+                </p>
+                <textarea id="q7" name="q7" rows="4" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-base sm:text-lg"></textarea>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" id="submitBtn" class="w-full py-5 sm:py-6 px-4 sm:px-6 bg-indigo-600 text-white rounded-xl font-bold text-xl sm:text-2xl hover:bg-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    ✅ ส่งแบบสอบถาม
+                </button>
+            </div>
+        </form>
+    </div>
     
     <script>
-        // Question and answer data
-        const questions = [
-            {
-                question: 'คำว่า “กะปิ” หมายถึงอะไร',
-                answers: ['เครื่องเทศ', 'เครื่องปรุง', 'ภาชนะ', 'ผลไม้'],
-                correct: 'เครื่องปรุง'
-            },
-            {
-                question: '“กะลา” ใช้ทำอะไรได้',
-                answers: ['ภาชนะ', 'ดนตรี', 'เสื้อผ้า', 'เครื่องมือไถนา'],
-                correct: 'ภาชนะ'
-            },
-            {
-                question: 'คำว่า “กะละมัง” เป็นหมวดหมู่ใด',
-                answers: ['ราชการ', 'ชีวิตประจำวัน', 'ศาสนา', 'ธรรมชาติ'],
-                correct: 'ชีวิตประจำวัน'
-            },
-            {
-                question: '“กษัตริย์” เป็นคำที่มาจากภาษามอญในหมวดใด',
-                answers: ['ศาสนาและวัฒนธรรม', 'ธรรมชาติ', 'อาหาร', 'ของใช้'],
-                correct: 'ศาสนาและวัฒนธรรม'
-            },
-            {
-                question: '“ครก” ใช้ทำอะไร',
-                answers: ['กิน', 'ตำอาหาร', 'ปลูกต้นไม้', 'ขุดดิน'],
-                correct: 'ตำอาหาร'
-            },
-            {
-                question: 'คำว่า “ตำบล” เกี่ยวข้องกับอะไร',
-                answers: ['การปกครอง', 'ธรรมชาติ', 'ศาสนา', 'ผลไม้'],
-                correct: 'การปกครอง'
-            },
-            {
-                question: '“กระบุง” หมายถึงอะไร',
-                answers: ['ภาชนะ', 'อาหาร', 'ผลไม้', 'เครื่องมือ'],
-                correct: 'ภาชนะ'
-            },
-            {
-                question: '“กะทิ” ทำจากอะไร',
-                answers: ['ข้าวโพด', 'มะพร้าว', 'กล้วย', 'อ้อย'],
-                correct: 'มะพร้าว'
-            },
-            {
-                question: 'คำว่า “มะพร้าว” มาจากภาษาอะไร',
-                answers: ['เขมร', 'มอญ', 'จีน', 'บาลี'],
-                correct: 'เขมร'
-            },
-            {
-                question: '“ขนุน” เป็นคำมอญที่อยู่ในหมวดใด',
-                answers: ['ผลไม้', 'ภาชนะ', 'การปกครอง', 'ศาสนา'],
-                correct: 'ผลไม้'
-            },
-            {
-                question: '“คลัง” เกี่ยวข้องกับอะไร',
-                answers: ['ศาสนา', 'เก็บของ/การปกครอง', 'อาหาร', 'ธรรมชาติ'],
-                correct: 'เก็บของ/การปกครอง'
-            },
-            {
-                question: 'คำว่า “กะทัดรัด” มีความหมายใกล้เคียงกับข้อใด',
-                answers: ['ใหญ่โต', 'พอดี', 'ยาวมาก', 'เล็กมาก'],
-                correct: 'พอดี'
-            },
-            {
-                question: '“จอก” คืออะไร',
-                answers: ['แก้วเล็ก', 'ผลไม้', 'เครื่องมือไถนา', 'เครื่องปรุง'],
-                correct: 'แก้วเล็ก'
-            },
-            {
-                question: 'คำว่า “กะถิน” จัดอยู่ในหมวดใด',
-                answers: ['ผลไม้', 'พืช/ธรรมชาติ', 'การปกครอง', 'ศาสนา'],
-                correct: 'พืช/ธรรมชาติ'
-            },
-            {
-                question: '“มหา” ในภาษาไทยที่รับมาจากมอญ หมายถึง',
-                answers: ['เล็ก', 'ใหญ่/ยิ่งใหญ่', 'กลาง ๆ', 'วิเศษ'],
-                correct: 'ใหญ่/ยิ่งใหญ่'
-            },
-            {
-                question: 'คำว่า “โขลน” เกี่ยวกับ',
-                answers: ['การรักษาความสงบ', 'การทำอาหาร', 'การปกครองบ้านเมือง', 'การค้าขาย'],
-                correct: 'การรักษาความสงบ'
-            },
-            {
-                question: '“ฉาง” หมายถึงที่เก็บอะไร',
-                answers: ['เกลือ', 'ข้าว', 'น้ำ', 'เครื่องมือ'],
-                correct: 'ข้าว'
-            },
-            {
-                question: 'คำว่า “พระ” เป็นคำที่รับมาจากภาษามอญในหมวด',
-                answers: ['ชีวิตประจำวัน', 'ศาสนา', 'การปกครอง', 'ธรรมชาติ'],
-                correct: 'ศาสนา'
-            },
-            {
-                question: '“กะได” มีความหมายใกล้เคียงกับอะไร',
-                answers: ['บันไดน้ำ', 'คันนา', 'เขื่อน', 'สะพาน'],
-                correct: 'บันไดน้ำ'
-            },
-            {
-                question: 'คำว่า “ขุน” สะท้อนถึงหมวดหมู่ใด',
-                answers: ['การปกครอง', 'อาหาร', 'ศาสนา', 'ภาชนะ'],
-                correct: 'การปกครอง'
-            }
-        ];
-
-        // Game state variables
-        let currentQuestions = [];
-        let currentQuestionIndex = 0;
-        let hearts = 3;
-        let timer = 3; // Updated time to 3 seconds
-        let timerInterval;
-        let score = 0;
-        let isGameOver = false;
-        let isProcessingAnswer = false; // New flag to prevent multiple clicks
-
-        // DOM references
-        const splashScreen = document.getElementById('splash-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const endScreen = document.querySelector('.end-screen');
-        const endMessageTitle = document.getElementById('end-message-title');
-        const startBtn = document.querySelector('.start-btn');
-        const restartBtn = document.querySelector('.restart-btn');
-        const questionText = document.getElementById('question-text');
-        const answersGrid = document.getElementById('answers-grid');
-        const heartsDisplay = document.getElementById('hearts-display');
-        const timerDisplay = document.getElementById('timer-display');
-        const visualObstruction = document.getElementById('visual-obstruction');
-        const statusMessage = document.getElementById('status-message');
-        const scoreDisplay = document.getElementById('score-display');
-
-        // Function to shuffle an array
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // Function to start the game
-        function startGame() {
-            console.log('Game Started');
-            isGameOver = false;
-            hearts = 3;
-            score = 0;
-            currentQuestionIndex = 0;
-            currentQuestions = shuffle([...questions]); // Shuffle questions for a new game
-            
-            updateHeartsDisplay();
-            splashScreen.classList.add('hidden');
-            endScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            showQuestion();
-        }
-
-        // Function to display a question
-        function showQuestion() {
-            if (currentQuestionIndex >= currentQuestions.length) {
-                // If all questions are answered
-                endGame(true); // End game as a win
-                return;
-            }
-
-            isProcessingAnswer = false; // Reset the flag for the new question
-            const currentQuestion = currentQuestions[currentQuestionIndex];
-            
-            // Shuffle answers for ALL questions
-            currentQuestion.answers = shuffle(currentQuestion.answers);
-            
-            // Apply blur effect only for questions 17-20 (index 16-19)
-            if (currentQuestionIndex >= 16 && currentQuestionIndex <= 19) {
-                answersGrid.classList.add('blurred-answers');
+        // Web Speech API for reading text
+        function readText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'th-TH';
+                speechSynthesis.speak(utterance);
             } else {
-                answersGrid.classList.remove('blurred-answers');
+                console.log('Speech Synthesis API not supported in this browser.');
             }
-
-            questionText.textContent = currentQuestion.question;
-            answersGrid.innerHTML = '';
-            
-            // Create answer buttons
-            currentQuestion.answers.forEach(answer => {
-                const button = document.createElement('button');
-                button.textContent = answer;
-                button.classList.add('answer-btn');
-                button.addEventListener('click', () => checkAnswer(button, answer, currentQuestion.correct));
-                answersGrid.appendChild(button);
-            });
-            
-            // Reset display
-            resetTimer();
-            visualObstruction.classList.remove('active');
-            statusMessage.classList.remove('show', 'correct', 'incorrect');
+        }
+        
+        // Define an audio context and a short sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function playDingSound() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 440; // A4
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.2);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
         }
 
-        // Function to check the answer
-        function checkAnswer(button, selectedAnswer, correctAnswer) {
-            // Prevent multiple clicks
-            if (isProcessingAnswer) {
-                return;
-            }
-            isProcessingAnswer = true;
+        const surveyForm = document.getElementById('surveyForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('progressBar');
+        const statusMessage = document.getElementById('statusMessage');
 
-            if (isGameOver) return; // Do not check if the game is over
+        const totalQuestions = 7;
+        const radioQuestionNames = ['q1', 'q2', 'q3', 'q4', 'q5'];
+        const textareaQuestionIds = ['q6', 'q7'];
+        const allQuestionContainers = {
+            'q1': document.getElementById('q1-container'),
+            'q2': document.getElementById('q2-container'),
+            'q3': document.getElementById('q3-container'),
+            'q4': document.getElementById('q4-container'),
+            'q5': document.getElementById('q5-container'),
+            'q6': document.getElementById('q6-container'),
+            'q7': document.getElementById('q7-container'),
+            'name': document.getElementById('name-group'),
+            'grade': document.getElementById('grade-group')
+        };
+        const allQuestionIds = ['name', 'grade', ...radioQuestionNames, ...textareaQuestionIds];
 
-            stopTimer();
-
-            if (selectedAnswer === correctAnswer) {
-                // Correct answer
-                score++;
-                button.classList.add('correct');
-                showStatusMessage('ถูกต้อง!', 'correct');
-                setTimeout(() => {
-                    currentQuestionIndex++;
-                    showQuestion();
-                }, 1000);
-            } else {
-                // Incorrect answer
-                hearts--;
-                button.classList.add('incorrect');
-                showStatusMessage('ผิด!', 'incorrect');
-                updateHeartsDisplay();
-                
-                // Find the correct answer to highlight it
-                const correctButton = Array.from(answersGrid.children).find(btn => btn.textContent === correctAnswer);
-                if (correctButton) {
-                    correctButton.classList.add('correct');
-                }
-
-                if (hearts <= 0) {
-                    endGame(false); // End game as a loss
-                } else {
-                    setTimeout(() => {
-                        currentQuestionIndex++;
-                        showQuestion();
-                    }, 1000);
+        // Function to check if a radio group is answered
+        function isRadioGroupChecked(name) {
+            const radios = document.getElementsByName(name);
+            for (const radio of radios) {
+                if (radio.checked) {
+                    return true;
                 }
             }
+            return false;
         }
 
-        // Function to show status message
-        function showStatusMessage(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.classList.add('show', type);
+        // Function to check if a textarea has content
+        function isTextareaFilled(id) {
+            const textarea = document.getElementById(id);
+            return textarea && textarea.value.trim() !== '';
         }
 
-        // Function to update hearts display
-        function updateHeartsDisplay() {
-            const heartsElements = heartsDisplay.querySelectorAll('.heart');
-            heartsElements.forEach((heart, index) => {
-                if (index >= hearts) {
-                    heart.classList.add('lost');
-                } else {
-                    heart.classList.remove('lost');
+        // Function to update the progress bar and text
+        function updateProgress() {
+            let answeredCount = 0;
+
+            // Count answered radio questions
+            radioQuestionNames.forEach(name => {
+                if (isRadioGroupChecked(name)) {
+                    answeredCount++;
                 }
             });
-        }
 
-        // Function to start the timer
-        function startTimer() {
-            timer = 3; // Updated time to 3 seconds
-            timerDisplay.textContent = `${timer}s`;
-            timerInterval = setInterval(() => {
-                timer--;
-                timerDisplay.textContent = `${timer}s`;
-
-                // Display visual obstruction
-                if (timer <= 2) { // Start sooner
-                    visualObstruction.classList.add('active');
+            // Count answered textarea questions
+            textareaQuestionIds.forEach(id => {
+                if (isTextareaFilled(id)) {
+                    answeredCount++;
                 }
-
-                if (timer <= 0) {
-                    stopTimer();
-                    hearts--;
-                    updateHeartsDisplay();
-                    showStatusMessage('หมดเวลา!', 'incorrect');
-                    
-                    if (hearts <= 0) {
-                        endGame(false); // End game as a loss
-                    } else {
-                        setTimeout(() => {
-                            currentQuestionIndex++;
-                            showQuestion();
-                        }, 1000);
-                    }
-                }
-            }, 1000);
-        }
-
-        // Function to stop the timer
-        function stopTimer() {
-            clearInterval(timerInterval);
-        }
-
-        // Function to reset the timer
-        function resetTimer() {
-            stopTimer();
-            startTimer();
-        }
-
-        // Function to end the game
-        function endGame(isWin = false) {
-            isGameOver = true;
-            stopTimer();
-            console.log('game over');
+            });
             
-            // Show win/loss message
-            if (isWin) {
-                endMessageTitle.textContent = 'คุณชนะแล้ว!';
-                endMessageTitle.classList.remove('game-over-text');
-                endMessageTitle.classList.add('game-win-text');
-            } else {
-                endMessageTitle.textContent = 'เกมจบแล้ว! คุณแพ้';
-                endMessageTitle.classList.remove('game-win-text');
-                endMessageTitle.classList.add('game-over-text');
-            }
+            const progressPercentage = (answeredCount / totalQuestions) * 100;
+            progressText.textContent = `ตอบแล้ว ${answeredCount}/${totalQuestions} ข้อ`;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+        
+        // Function to change container color based on radio value
+        function updateQuestionStyle(radioInput) {
+            const container = radioInput.closest('[id$="-container"]');
+            if (!container) return;
 
-            // Show end screen
-            document.body.style.backgroundColor = '#dcdde1';
-            endScreen.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            scoreDisplay.textContent = score;
+            // Reset previous state
+            container.classList.remove('bg-red-100', 'border-red-400', 'bg-green-100', 'border-green-400');
+            
+            // Set new state based on value
+            const value = parseInt(radioInput.value);
+            if (value === 1) {
+                container.classList.add('bg-red-100', 'border-red-400');
+            } else if (value === 5) {
+                container.classList.add('bg-green-100', 'border-green-400');
+            }
         }
 
-        // Event Listeners
-        startBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('click', () => {
-            document.body.style.backgroundColor = '#f0f2f5';
-            startGame();
+        // Add event listeners for all form elements
+        surveyForm.addEventListener('change', (event) => {
+            const target = event.target;
+            // Play sound for radio button clicks
+            if (target.type === 'radio') {
+                playDingSound();
+                updateQuestionStyle(target);
+            }
+            updateProgress();
         });
 
-        // Start with the splash screen
-        window.onload = function() {
-            // The new structure hides the game screen at the start
-            splashScreen.classList.remove('hidden');
-            gameScreen.classList.add('hidden');
-            endScreen.classList.add('hidden');
-        };
+        surveyForm.addEventListener('input', updateProgress);
+        
+        // Form submission handler
+        surveyForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Clear previous errors
+            statusMessage.classList.add('hidden');
+            document.querySelectorAll('.border-red-500').forEach(el => {
+                el.classList.remove('border-red-500', 'shake');
+            });
+
+            const missingQuestions = [];
+            const personalInfo = ['name', 'grade'];
+
+            // Check personal info fields
+            personalInfo.forEach(id => {
+                const element = document.getElementById(id);
+                if (element.value.trim() === '') {
+                    missingQuestions.push(allQuestionContainers[id]);
+                    element.closest('div').classList.add('border-red-500', 'shake');
+                }
+            });
+            
+            // Check radio questions
+            radioQuestionNames.forEach(name => {
+                if (!isRadioGroupChecked(name)) {
+                    missingQuestions.push(allQuestionContainers[name]);
+                    allQuestionContainers[name].classList.add('border-red-500', 'shake');
+                }
+            });
+
+            // Check textarea questions
+            textareaQuestionIds.forEach(id => {
+                if (!isTextareaFilled(id)) {
+                    missingQuestions.push(allQuestionContainers[id]);
+                    allQuestionContainers[id].classList.add('border-red-500', 'shake');
+                }
+            });
+
+            if (missingQuestions.length > 0) {
+                statusMessage.textContent = 'กรุณาตอบคำถามที่ยังว่างอยู่ครับ';
+                statusMessage.className = 'block bg-red-100 text-red-700 p-3 mb-4 rounded-lg text-sm font-semibold transition-all duration-300';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // All questions answered, proceed with submission
+                submitBtn.innerHTML = '⏳ กำลังส่ง...';
+                submitBtn.disabled = true;
+                
+                // Simulate a server request
+                setTimeout(() => {
+                    submitBtn.innerHTML = '✅ ส่งเรียบร้อย ขอบคุณครับ!';
+                    submitBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                    submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    
+                    statusMessage.textContent = 'ขอบคุณที่ช่วยแบ่งปันความคิดเห็น! แบบสอบถามของคุณถูกส่งเรียบร้อยแล้วครับ';
+                    statusMessage.className = 'block bg-green-100 text-green-700 p-3 mb-4 rounded-lg text-sm font-semibold transition-all duration-300';
+
+                    // Optional: hide form and show thank you message
+                    document.getElementById('surveyForm').classList.add('hidden');
+                }, 1500);
+            }
+        });
     </script>
 </body>
 </html>
